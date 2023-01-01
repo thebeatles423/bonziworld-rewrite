@@ -1,0 +1,21 @@
+{
+    "colors": [
+        "purple",
+        "red",
+        "blue",
+        "green",
+        "brown",
+        "black",
+        "pink"
+    ],
+    "pitch": {
+        "max": 125,
+        "min": 15,
+        "default": "random"
+    },
+    "speed": {
+        "max": 275,
+        "min": 125,
+        "default": "random"
+    }
+}

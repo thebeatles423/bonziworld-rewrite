@@ -1,0 +1,25 @@
+{
+  "name": "bonziworld-revived",
+  "version": "1.0.0",
+  "description": "A remake of BonziWORLD Revived written from scratch",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "engines": {
+    "node": ">=15"
+  },
+  "keywords": [
+    "bonziworld"
+  ],
+  "author": "Daisreich",
+  "license": "MIT",
+  "dependencies": {
+    "bad-words": "^3.0.4",
+    "discord-webhook-node": "^1.1.8",
+    "express": "^4.18.2",
+    "nodemon": "^2.0.20",
+    "socket.io": "^4.5.3",
+    "socket.io-client": "^4.5.3"
+  }
+}
