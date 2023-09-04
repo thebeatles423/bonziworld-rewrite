@@ -1,58 +1,660 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BonziWORLD</title>
-    <link rel="stylesheet" href="./css/styles.css">
-    <script src="https://code.createjs.com/1.0.0/easeljs.min.js"></script>
-    <script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
-    <script src="./js/speakClient.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
-    <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
-    <script src="./js/bonzi.js"></script>
-    <!--[if IE 8]>
-        <script>
-            window.location.href = "compatibility.html"
-        </script>
-    <![endif]-->
-</head>
-<body>
-    <div class="page login" id="page_login">
-        <div id="login_readme">
-            <strong>WARNING</strong>: You are currently playing the alpha version of BonziWORLD. This can be unstable!<br>Report bugs to our discord server.
+    <head>
+        <title>BonziWORLD</title>
+        <script src="https://code.createjs.com/1.0.0/easeljs.min.js"></script>
+        <script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
+        <script src="./js/speakClient.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
+        <script src="./js/bonzi.js"></script>
+        <!--[if IE 8]>
+            <script>
+                window.location.href = "compatibility.html"
+            </script>
+        <![endif]-->
+        <style>
+            body,
+            html {
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+            /* http://meyerweb.com/eric/tools/css/reset/ 
+            v2.0 | 20110126
+            License: none (public domain)
+            */
+            html,
+            body,
+            div,
+            span,
+            applet,
+            object,
+            iframe,
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6,
+            p,
+            blockquote,
+            pre,
+            a,
+            abbr,
+            acronym,
+            address,
+            big,
+            cite,
+            code,
+            del,
+            dfn,
+            em,
+            img,
+            ins,
+            kbd,
+            q,
+            s,
+            samp,
+            small,
+            strike,
+            strong,
+            sub,
+            sup,
+            tt,
+            var,
+            b,
+            u,
+            i,
+            center,
+            dl,
+            dt,
+            dd,
+            fieldset,
+            form,
+            label,
+            legend,
+            table,
+            caption,
+            tbody,
+            tfoot,
+            thead,
+            tr,
+            th,
+            td,
+            article,
+            aside,
+            canvas,
+            details,
+            embed,
+            figure,
+            figcaption,
+            footer,
+            header,
+            hgroup,
+            menu,
+            nav,
+            output,
+            ruby,
+            section,
+            summary,
+            time,
+            mark,
+            audio,
+            video {
+                margin: 0;
+                padding: 0;
+                border: 0;
+                vertical-align: baseline;
+            }
+
+            /* HTML5 display-role reset for older browsers */
+            article,
+            aside,
+            details,
+            figcaption,
+            figure,
+            footer,
+            header,
+            hgroup,
+            menu,
+            nav,
+            section {
+                display: block;
+            }
+
+            body {
+                line-height: 1;
+            }
+
+            blockquote,
+            q {
+                quotes: none;
+            }
+
+            blockquote:before,
+            blockquote:after,
+            q:before,
+            q:after {
+                content: "";
+                content: none;
+            }
+
+            table {
+                border-collapse: collapse;
+                border-spacing: 0;
+            }
+
+            body,
+            html {
+                margin: 0;
+                padding: 0;
+                font-size: 16px;
+            }
+
+            body,
+            body * {
+                font-family: "Tahoma", sans-serif;
+            }
+
+            input[type="text"] {
+                background-color: #fff;
+                border: 1px inset #aaa;
+                color: #000;
+            }
+
+            .xp_bubble,
+            .bubble {
+                background: #ffffe1;
+                color: #000;
+                -webkit-border-radius: 9px;
+                -moz-border-radius: 9px;
+                border-radius: 9px;
+                border: #000000 solid 1px;
+            }
+            .page {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                z-index: 999;
+            }
+
+            #content {
+                width: 100%;
+                height: 100%;
+                position: fixed;
+                background-color: #6d33a0;
+                background-image: url("../img/desktop/logo.png"), url("../img/desktop/bg.png");
+                background-position: top left, center;
+                background-repeat: no-repeat;
+            }
+            body.blur #content {
+                width: 100%;
+                height: 100%;
+                position: fixed;
+                background-color: #6d33a0;
+                background-image: url("../img/desktop/logo.png"), url("../img/desktop/bg.png");
+                background-position: top left, center;
+                background-repeat: no-repeat;
+                filter: blur(1.5rem);
+            }
+            .bonzi {
+                position: fixed;
+                top: 0;
+                left: 0;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+            #bonzi-canvas {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                pointer-events: none;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                user-select: none;
+                top: 0;
+                left: 0;
+            }
+            
+            #room_info {
+                color: rgba(255, 255, 255, 0.5);
+                font-weight: bold;
+                line-height: 125%;
+                text-align: right;
+                padding: 7px;
+                font-size: 12px;
+                position: absolute;
+                bottom: 30px;
+                right: 0;
+                user-select: text;
+                -webkit-user-select: text;
+                filter: blur(0.05rem);
+            }
+            .bonzi > canvas,
+            .bonzi_placeholder {
+                position: absolute;
+            }
+
+            .bonzi > canvas, .bonzi_placeholder {
+                position: absolute;
+                cursor: grab;
+            }
+            .bonzi:active > canvas, .bonzi_placeholder:active {
+                position: absolute;
+                cursor: grabbing;
+            }
+            .bubble-content {
+                padding: 12px;
+                max-height: 175px;
+                user-select: text;
+                -webkit-user-select: text;
+                overflow-x: hidden;
+                overflow-y: auto;
+                font-size: 14px;
+                font-smooth: never;
+                -webkit-font-smoothing: none;
+                position: relative;
+                overflow-wrap: break-word;
+                word-wrap: break-word;
+                -ms-word-break: break-all;
+                word-break: break-word;
+                -ms-hyphens: auto;
+                -moz-hyphens: auto;
+                -webkit-hyphens: auto;
+                hyphens: auto;
+            }
+
+            .bubble {
+                padding: 0px;
+                width: 197px;
+                position: absolute;
+            }
+            .bubble::after {
+                content: "";
+                position: absolute;
+            }
+
+            .bubble-left {
+                right: -45px;
+                top: 40px;
+            }
+            .bubble-left::after {
+                background-image: url("../img/bonzi/bubble_tail_l.png");
+                width: 22px;
+                height: 14px;
+                top: 12px;
+                right: -22px;
+            }
+
+            .bubble-right {
+                top: 40px;
+                left: 155px;
+            }
+            .bubble-right::after {
+                background-image: url("../img/bonzi/bubble_tail_r.png");
+                width: 22px;
+                height: 14px;
+                top: 12px;
+                left: -22px;
+            }
+
+            .bubble-bottom {
+                top: 156px;
+            }
+            .bubble-bottom::after {
+                background-image: url("../img/bonzi/bubble_tail_b.png");
+                width: 28px;
+                height: 22px;
+                top: -22px;
+                left: 26px;
+            }
+
+            .bubble-top {
+                bottom: 4px;
+            }
+            .bubble-top::after {
+                background-image: url("../img/bonzi/bubble_tail_t.png");
+                width: 28px;
+                height: 22px;
+                left: 110px;
+            }
+
+            .bonzi_name {
+                border-style: solid;
+                border-width: 4px 12px 4px 0;
+                border-radius: 9px;
+                border: #000000 solid 1px;
+                padding: 8px;
+                position: absolute;
+                background: #ffffe1;
+                font-size: 12px;
+                color: #000;
+            }
+
+            #chat_bar {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 30px;
+                background-image: url("../img/desktop/taskbar.png");
+                background-size: 100% 100%;
+                z-index: 999;
+            }
+
+            #chat_tray {
+                background-image: url("../img/desktop/notif_left.png"), url("../img/desktop/notif.png");
+                background-repeat: no-repeat;
+                background-position: left;
+                background-size: 5px 30px, 100% 100%;
+                vertical-align: middle;
+                padding-left: 7px;
+                padding-top: 3px;
+                width: 22px;
+            }
+
+            .chat_bar_top {
+                top: 0;
+            }
+
+            #chat_send {
+                width: 100px;
+                user-select: none;
+                background-image: url("../img/desktop/start.png");
+                background-size: 100%;
+                background-repeat: no-repeat;
+                box-sizing: border-box;
+                color: #fff;
+                font-style: italic;
+                font-weight: bold;
+                letter-spacing: 2px;
+                font-size: 16px;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.75);
+                padding-left: 35px;
+            }
+            #chat_send:hover {
+                background-position: 0 -33px;
+            }
+            #chat_send:active {
+                background-position: 0 -67px;
+            }
+
+            #chat_message_cont {
+                padding: 4px;
+            }
+
+            #chat_message {
+                width: 100%;
+            }
+            #page_login {
+                background-color: #8b5adc;
+                background-image: url("../img/logon/top.png"), url("../img/logon/bottom.png"), url("../img/logon/topleft.png"), url("../img/logon/divider.png");
+                background-position: top, bottom, top left, center;
+                background-size: 100% 100px, 100% 122px, auto, 1px 100%;
+                background-repeat: no-repeat;
+            }
+
+            body.blur #page_login {
+                background-color: #8b5adc;
+                background-image: url("../img/logon/top.png"), url("../img/logon/bottom.png"), url("../img/logon/topleft.png"), url("../img/logon/divider.png");
+                background-position: top, bottom, top left, center;
+                background-size: 100% 100px, 100% 122px, auto, 1px 100%;
+                background-repeat: no-repeat;
+                opacity: 0.35;
+            }
+
+            #login_apps {
+                display: flex;
+                justify-content: center;
+                padding: 16px;
+                flex-wrap: wrap;
+            }
+
+            #login_card {
+                background-image: url("../img/logon/card.png");
+                width: 353px;
+                height: 70px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                margin-left: 20px;
+                margin-top: -35px;
+                box-sizing: border-box;
+
+                opacity: 1;
+            }
+
+            #login_error {
+                top: 100%;
+                position: absolute;
+                margin-top: 8px;
+                color: #d03b3b;
+                font-size: 12px;
+                padding: 8px;
+                opacity: 1;
+            }
+
+            #login_readme {
+                color: #444;
+                padding: 12px;
+                bottom: 24%;
+                width: auto;
+                transform: translateX(-50%);
+                -webkit-transform: translateX(-50%);
+                text-align: center;
+                left: 50%;
+                opacity: 1;
+            }
+
+            #login_name,
+            #login_room {
+                width: 160px;
+                box-sizing: border-box;
+                opacity: 1;
+            }
+
+            #login_name {
+                height: 28px;
+                top: 8px;
+                left: 16px;
+                font-size: 14px;
+            }
+
+            #login_room {
+                height: 18px;
+                top: 43px;
+                left: 16px;
+                font-size: 12px;
+            }
+
+            #login_go {
+                left: 185px;
+                top: 24px;
+                position: absolute;
+                width: 20px;
+                height: 20px;
+                background-image: url("../img/logon/go.png");
+                background-size: 100%;
+                background-repeat: no-repeat;
+                opacity: 1;
+            }
+            #login_go:hover {
+                background-position: 0 -20px;
+            }
+            #login_go:active {
+                background-position: 0 -40px;
+            }
+
+            #page_login_logo {
+                background-image: url("../img/logon/logo.png");
+                background-position: center;
+                background-size: auto, auto;
+                background-repeat: no-repeat;
+                pointer-events: none;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                user-select: none;
+                top: 0;
+                left: 0;
+            }
+
+            #login_load {
+                color: #fff;
+                font-weight: bold;
+                font-style: italic;
+                font-size: 35px;
+                letter-spacing: 2px;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+                position: absolute;
+                line-height: 100%;
+                height: 35px;
+                top: 50%;
+                left: 50%;
+                margin-left: 23px;
+                opacity: 1;
+            }
+
+            #login_version {
+                color: #fff;
+                position: absolute;
+                right: 16px;
+                bottom: 16px;
+                font-size: 16px;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+
+            .xp_textbox,
+            #login_name,
+            #login_room,
+            #login_readme,
+            #login_error {
+                position: absolute;
+                padding: 4px 3px;
+                border: none;
+                border-radius: 3px;
+                box-shadow: 2px 2px 2px #13316f;
+                outline: none;
+                background: #fff;
+                color: #000;
+            }
+            @media screen and (max-height: 550px) {
+                #page_login {
+                    background-image: url("../img/logon/topleft.png");
+                    background-position: 0 -100px;
+                    background-size: auto, auto;
+                    background-repeat: no-repeat;
+                }
+                #login_readme {
+                    font-size: 12px;
+                    bottom: 10%;
+                }
+            }
+            @media screen and (max-height: 650px) {
+                #login_apps > a:not(:first-child) {
+                    display: none;
+                }
+            }
+            @media screen and (max-height: 450px) {
+                #login_apps {
+                    display: none;
+                }
+            }
+            @media screen and (max-height: 300px) {
+                #login_readme,
+                #login_version {
+                    display: none;
+                }
+            }
+            @media screen and (max-height: 400px) and (max-width: 560px) {
+                #login_readme {
+                    display: none;
+                }
+            }
+            @media screen and (max-width: 560px) {
+                #page_login {
+                    background-image: url("../img/logon/topleft.png");
+                    background-position: 0 -100px;
+                    background-size: auto, auto;
+                    background-repeat: no-repeat;
+                }
+                #page_login_logo {
+                    background-image: url("../img/logon/logo.png");
+                    background-position: center;
+                    background-size: auto, auto;
+                    background-repeat: no-repeat;
+                }
+                #login_card {
+                    background-image: url("../img/logon/card.mobile.png");
+                    width: 223px;
+                    height: 70px;
+                    margin-left: -112px;
+                    margin-top: 40px;
+                    opacity: 1;
+                }
+                #login_readme {
+                    bottom: 10%;
+                }
+                #login_load {
+                    margin-top: 45px;
+                    margin-left: 0;
+                    transform: translateX(-50%);
+                    -webkit-transform: translateX(-50%);
+                }
+
+                .message_cont {
+                    position: absolute;
+                    width: 100%;
+                    max-width: 512px;
+                    height: auto;
+                    max-height: 100%;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    -webkit-transform: translate(-50%, -50%);
+                    padding: 32px;
+                    box-sizing: border-box;
+                    overflow: auto;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="page login" id="page_login">
+            <div id="login_readme"><strong>WARNING</strong>: You are currently playing the alpha version of BonziWORLD. This can be unstable!<br>Report bugs to our discord server.</div>
+            <div id="login_card" class="no_selection">
+                <input id="login_name" type="text" placeholder="Nickname" />
+                <input id="login_room" list="login_rooms" type="text" placeholder="Room ID" />
+                <datalist id="login_rooms"> </datalist>
+                <div id="login_go" onclick="login()"></div>
+                <div id="login_error" class="no_selection" style="display: none;"></div>
+            </div>
+            <div id="login_load" class="no_selection" style="display: none;">loading</div>
+            <div id="login_version" class="no_selection">BonziWORLD Rewritten Alpha 1.0.0</div>
         </div>
-        <div id="login_card" class="no_selection">
-            <input id="login_name" type="text" placeholder="Nickname" />
-            <input id="login_room" list="login_rooms" type="text" placeholder="Room ID" />
-            <datalist id="login_rooms"> </datalist>
-            <div id="login_go" onclick="login()"></div>
-            <div id="login_error" class="no_selection" style="display: none;"></div>
+        <div id="page_login_logo" class="page login"></div>
+        <div id="content">
+            <div id="room_info">
+                <br />
+                <span class="no_selection">Room ID -&#32;</span><span class="room_id">???</span><br />
+            </div>
+            <canvas id="bonzi-canvas"></canvas>
+            <table id="chat_bar">
+                <tbody>
+                    <tr>
+                        <td id="chat_send" class="no_selection">send</td>
+                        <td id="chat_message_cont">
+                            <input id="chat_message" type="text" placeholder="Enter a message" />
+                        </td>
+                        <td id="chat_tray">
+                            <div id="show_desktop"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <div id="login_load" class="no_selection" style="display: none;">loading</div>
-        <div id="login_version" class="no_selection">BonziWORLD Rewritten Alpha 1.0.0</div>
-    </div>
-    <div id="page_login_logo" class="page login"></div>
-    <div id="content">
-        <div id="room_info">
-            <br />
-            <span class="no_selection">Room ID -&#32;</span><span class="room_id">???</span><br />
-        </div>
-        <canvas id="bonzi-canvas"></canvas>
-        <table id="chat_bar">
-            <tbody>
-                <tr>
-                    <td id="chat_send" class="no_selection">send</td>
-                    <td id="chat_message_cont">
-                        <input id="chat_message" type="text" placeholder="Enter a message" />
-                    </td>
-                    <td id="chat_tray">
-                        <div id="show_desktop"></div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</body>
+    </body>
 </html>
