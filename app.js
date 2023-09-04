@@ -3,8 +3,8 @@ const app = express();
 const server = require('http').createServer(app);
 const settings = require('./settings.json');
 const Utils = require("./utils.js");
-const Filter = require('bad-words');
-const filter = new Filter();
+// c onst Filter = require('bad-words');
+// const filter = new Filter();
 
 app.use(express.static(__dirname + "/client"));
 
