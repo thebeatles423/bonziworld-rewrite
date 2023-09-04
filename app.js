@@ -1,25 +1,119 @@
 const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const Filter = require('bad-words');
-const Utils = require('./utils.js');
-const settings = require('./settings.json');
-
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-    cors: {
-        origin: ['*'],
-    },
-});
-
+const server = require('http').createServer(app);
+const settings = require('./settings.json');
+const Utils = require("./utils.js");
+const Filter = require('bad-words');
 const filter = new Filter();
 
-const rooms = {};
-const port = process.env.PORT || 3000;
+app.use(express.static(__dirname + "/client"));
 
+let rooms = {};
+const io = require('socket.io')(server, {
+    cors: {
+        origin: ['*'],
+    }
+});
+
+var port = process.env.PORT || 3000;
 server.listen(port, () => {
-    console.log('BonziWORLD Rewrite online!');
+    console.log("BonziWORLD Rewrite online!");
+});
+
+function newRoom(rid) {
+    rooms[rid] = new Room(rid);
+}
+
+io.on('connection', (socket) => {
+    var id = Utils.guidGen();
+    socket.login = false;
+    socket.guid = id;
+    let bc = settings.colors;
+    socket.pitch = Utils.randomRangeInt(settings.pitch.min, settings.pitch.max);
+    socket.speed = Utils.randomRangeInt(settings.speed.min, settings.speed.max);
+    socket.name = "BonziBUDDY";
+    socket.room = mainroom;
+
+    for (let u in socket.room.users) {
+        const users = socket.room.users;
+        socket.emit("adduser", {
+            loginData: {
+                name: users[u].name
+            },
+            color: users[u].color,
+            pitch: users[u].pitch,
+            speed: users[u].speed,
+            id: users[u].id
+        });
+    }
+
+    socket.on("set_color", (data) => {
+        socket.room.updateUser(socket, {
+            name: socket.name,
+            color: data.color,
+            pitch: socket.pitch,
+            speed: socket.speed,
+            id: socket.guid
+        });
+        socket.color = data.color;
+    });
+
+    socket.on("login", (data) => {
+        if (!socket.login) {
+            let rid = data.rid;
+            if (typeof rid == "undefined" || rid === "" || rid === "default") {
+
+            } else {
+                socket.room.leaveLocal(socket);
+                newRoom(rid);
+                socket.room = rooms[rid];
+            }
+            var color = bc[Math.floor(Math.random() * bc.length)];
+            socket.userdata = {
+                name: data.name,
+                color: color,
+                pitch: socket.pitch,
+                speed: socket.speed,
+                id: socket.guid
+            }
+            socket.room.join(socket, socket.userdata);
+            socket.room.emit("adduser", {
+                loginData: data,
+                color: color,
+                pitch: socket.pitch,
+                speed: socket.speed,
+                id: socket.guid
+            });
+            socket.name = data.name;
+            socket.color = color;
+            socket.login = true;
+        }
+    });
+
+    socket.on("disconnect", (data) => {
+        socket.room.leave(socket, socket.userdata);
+    });
+
+    socket.on("talk", (data) => {
+        socket.room.emit("talk", {
+            text: data,
+            id: socket.guid,
+            pitch: socket.pitch,
+            speed: socket.speed
+        });
+        var text = filter.clean(data);
+        if (text.length < 1000 && !cool) {
+            try {
+                cool = true;
+                setTimeout(function () {
+                    cool = false;
+                }, 3000);
+            } catch (e) {
+                console.log("WTF?: " + e);
+            }
+        }
+    });
+
 });
 
 class Room {
@@ -36,19 +130,19 @@ class Room {
     }
 
     updateUser(user, userdata) {
-        console.log('New color: ' + userdata.color);
-        const userIndex = this.users.indexOf(user);
+        let userIndex = this.users.indexOf(user);
 
-        if (userIndex !== -1) {
-            this.users.splice(userIndex, 1);
-            this.users.push(userdata);
-            user.color = userdata.color;
-            user.userdata = userdata;
-            io.emit('updateColor', {
-                color: userdata.color,
-                id: user.guid,
-            });
-        }
+        if (userIndex == -1) return;
+        this.users.splice(userIndex, 1);
+
+        this.users.push(userdata);
+        user.color = userdata.color;
+
+        user.userdata = userdata;
+        io.emit("updateColor", {
+            color: userdata.color,
+            id: user.guid
+        });
     }
 
     emit(cmd, data) {
@@ -57,21 +151,20 @@ class Room {
 
     leave(user, userdata) {
         try {
-            io.emit('leave', {
+            io.emit("leave", {
                 id: user.guid,
             });
 
-            const userSocketIndex = this.userSockets.indexOf(user);
+            let userSocketIndex = this.userSockets.indexOf(user);
 
-            if (userSocketIndex !== -1) {
-                this.userSockets.splice(userSocketIndex, 1);
-            }
+            if (userSocketIndex == -1) return;
+            this.userSockets.splice(userSocketIndex, 1);
 
-            const userIndex = this.users.indexOf(userdata);
+            let userIndex = this.users.indexOf(userdata);
 
-            if (userIndex !== -1) {
-                this.users.splice(userIndex, 1);
-            }
+            if (userIndex == -1) return;
+            this.users.splice(userIndex, 1);
+
         } catch (e) {
             console.error(e);
         }
@@ -80,7 +173,7 @@ class Room {
     leaveLocal(socket) {
         try {
             this.userSockets.forEach((user) => {
-                socket.emit('leave', {
+                socket.emit("leave", {
                     id: user.guid,
                 });
             });
@@ -90,103 +183,4 @@ class Room {
     }
 }
 
-function newRoom(rid) {
-    rooms[rid] = new Room(rid);
-}
-
 const mainroom = new Room('default');
-
-io.on('connection', (socket) => {
-    const id = Utils.guidGen();
-    socket.login = false;
-    socket.guid = id;
-    console.log('User connected: ' + socket.guid);
-    const bc = settings.colors;
-    socket.pitch = Utils.randomRangeInt(settings.pitch.min, settings.pitch.max);
-    socket.speed = Utils.randomRangeInt(settings.speed.min, settings.speed.max);
-    socket.name = 'BonziBUDDY';
-    socket.room = mainroom;
-
-    for (const user of socket.room.users) {
-        socket.emit('adduser', {
-            loginData: {
-                name: user.name,
-            },
-            color: user.color,
-            pitch: user.pitch,
-            speed: user.speed,
-            id: user.id,
-        });
-    }
-
-    socket.on('set_color', (data) => {
-        socket.room.updateUser(socket, {
-            name: socket.name,
-            color: data.color,
-            pitch: socket.pitch,
-            speed: socket.speed,
-            id: socket.guid,
-        });
-        socket.color = data.color;
-    });
-
-    socket.on('login', (data) => {
-        if (!socket.login) {
-            const rid = data.rid;
-
-            if (typeof rid !== 'undefined' && rid !== '' && rid !== 'default') {
-                socket.room.leaveLocal(socket);
-                newRoom(rid);
-                socket.room = rooms[rid];
-            }
-
-            const color = bc[Math.floor(Math.random() * bc.length)];
-            socket.userdata = {
-                name: data.name,
-                color: color,
-                pitch: socket.pitch,
-                speed: socket.speed,
-                id: socket.guid,
-            };
-
-            socket.room.join(socket, socket.userdata);
-            socket.room.emit('adduser', {
-                loginData: data,
-                color: color,
-                pitch: socket.pitch,
-                speed: socket.speed,
-                id: socket.guid,
-            });
-
-            socket.name = data.name;
-            socket.color = color;
-            socket.login = true;
-        }
-    });
-
-    socket.on('disconnect', (data) => {
-        console.log('User left: ' + socket.guid);
-        socket.room.leave(socket, socket.userdata);
-    });
-
-    socket.on('talk', (data) => {
-        console.log(data);
-        socket.room.emit('talk', {
-            text: data,
-            id: socket.guid,
-            pitch: socket.pitch,
-            speed: socket.speed,
-        });
-        const text = filter.clean(data);
-        if (text.length < 1000 && !cool) {
-            try {
-                cool = true;
-                setTimeout(() => {
-                    cool = false;
-                }, 3000);
-            } catch (e) {
-                console.log('WTF?: ' + e);
-            }
-        }
-    });
-});
